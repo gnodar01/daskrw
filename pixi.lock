@@ -286,7 +286,7 @@ packages:
 - pypi: ./
   name: daskrw
   version: 0.1.0
-  sha256: 22a3f0a31690111a786563f9d37870eddcd2e96108491f252c51749f7c565390
+  sha256: 53c36c5f4c92c388ea09a2939cfb5a890a2d35a0c353da261183784f3e7e41ed
   requires_dist:
   - dask<=2025.3.0
   - zarr>=2.16.1
