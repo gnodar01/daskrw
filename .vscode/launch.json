@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ExampleFlyMeas",
+      "type": "python",
+      "request": "launch",
+      "python": "${env:CONDA_PREFIX}/bin/python",
+      "justMyCode": false,
+      "module": "daskrw",
+      "args": [],
+      "env": {},
+      "console": "integratedTerminal"
+    }
+  ]
+}
