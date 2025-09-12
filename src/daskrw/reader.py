@@ -76,8 +76,8 @@ class TiledImageReader:
     Reads tiled/pyramidal ome-tiff images
     """
 
-    def __init__(self, image_file):
-        self.file = image_file
+    def __init__(self, image_file_path):
+        self.file_path = image_file_path
 
         self.__data = []
         self.__zarr_data = []
@@ -111,7 +111,7 @@ class TiledImageReader:
             del self.channel
             del self.plane
 
-            self.__path = self.file.path 
+            self.__path = self.file_path 
             self.__cached_meta = None
             self.__cached_full_meta = None
             self.__dim_idxs = {
@@ -181,7 +181,7 @@ class TiledImageReader:
                 raise NotImplementedError("Not yet implemented")
             return dask_array
 
-        path = self.file.path
+        path = self.file_path
         if not self.__data or path is None or path != self.__path:
             reader = self.__get_reader()
             self.__zarr_data: list[zarr.Array] = [ # type: ignore
@@ -656,7 +656,7 @@ class TiledImageReader:
 
         metadata = dict()
 
-        with tifffile.TiffFile(self.file.path) as tif:
+        with tifffile.TiffFile(self.file_path) as tif:
             metadata['byteorder'] = tif.byteorder
             metadata['num_pages'] = len(tif.pages)
             metadata['num_series'] = len(tif.series)
