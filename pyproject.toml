@@ -1,6 +1,12 @@
 [project]
 authors = [{name = "Nodar Gogoberidze", email = "gnodar01@gmail.com"}]
-dependencies = []
+dependencies = [
+  "dask<=2025.3.0",
+  "zarr>=2.16.1",
+  "ome-zarr==0.10.2", # last version supporting 3.9
+  "numpy>=1.24.4,<2",
+  "tifffile[codecs]>=2022.4.8",
+]
 name = "daskrw"
 requires-python = ">=3.9"
 version = "0.1.0"
