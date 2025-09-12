@@ -532,8 +532,6 @@ class TiledImageReader:
             self.__cached_full_meta = self.__extract_metadata(max_pages=None, include_tags=True)
         return self.__cached_full_meta
 
-    # TODO: LIS - Clean this up
-
     def __extract_standard_metadata(self) -> StandardMetadata:
         full_meta = self.__extract_metadata(max_pages=None, include_tags=False)
         pixels_meta = full_meta["metadatas"]["ome"]["OME"]["Image"]["Pixels"]
