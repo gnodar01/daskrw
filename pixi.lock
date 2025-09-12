@@ -73,6 +73,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/33/cf/8435d5a7159e2a9c83a95896ed596f68cf798005fe107cc655b5c5c14704/urllib3-1.26.20-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b3/a8/8f61d6b8f526efc8c10e12bf80b4206099fea78ade70427846a37bc9cbea/wrapt-1.17.3-cp39-cp39-macosx_10_9_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/5d/4e/001c53a22f6bd5f383f49915a53e40f0cab2d3f1884d968f3ae14be367b7/xmltodict-0.15.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/73/84/1fb6c85ae0cf9901046f07d0ac9eb162f7ce6d95db541130aa542ed377e6/yarl-1.20.1-cp39-cp39-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/5d/bd/8d881d8ca6d80fcb8da2b2f94f8855384daf649499ddfba78ffd1ee2caa3/zarr-2.18.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/80/ab/11a76c1e2126084fde2639514f24e6111b789b0bfa4fc6264a8975c7e1f1/zict-3.0.0-py2.py3-none-any.whl
@@ -286,13 +287,14 @@ packages:
 - pypi: ./
   name: daskrw
   version: 0.1.0
-  sha256: 53c36c5f4c92c388ea09a2939cfb5a890a2d35a0c353da261183784f3e7e41ed
+  sha256: db2d32c843846237eb2fda763819c9a4177286a7a52667999b64fccf77e0e4a3
   requires_dist:
   - dask<=2025.3.0
   - zarr>=2.16.1
   - ome-zarr==0.10.2
   - numpy>=1.24.4,<2
   - tifffile[codecs]>=2022.4.8
+  - xmltodict>=0.14.0
   requires_python: '>=3.9'
   editable: true
 - pypi: https://files.pythonhosted.org/packages/95/8a/d828dea3a1b6d7e796bebd8c64dc40d44d9a60762f759a11a61386eb38b5/distributed-2024.8.0-py3-none-any.whl
@@ -1105,6 +1107,11 @@ packages:
   version: 1.17.3
   sha256: 65d1d00fbfb3ea5f20add88bbc0f815150dbbde3b026e6c24759466c8b5a9ef9
   requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/5d/4e/001c53a22f6bd5f383f49915a53e40f0cab2d3f1884d968f3ae14be367b7/xmltodict-0.15.1-py2.py3-none-any.whl
+  name: xmltodict
+  version: 0.15.1
+  sha256: dcd84b52f30a15be5ac4c9099a0cb234df8758624b035411e329c5c1e7a49089
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/73/84/1fb6c85ae0cf9901046f07d0ac9eb162f7ce6d95db541130aa542ed377e6/yarl-1.20.1-cp39-cp39-macosx_10_9_x86_64.whl
   name: yarl
   version: 1.20.1

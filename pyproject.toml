@@ -6,6 +6,7 @@ dependencies = [
   "ome-zarr==0.10.2", # last version supporting 3.9
   "numpy>=1.24.4,<2",
   "tifffile[codecs]>=2022.4.8",
+  "xmltodict>=0.14.0",
 ]
 name = "daskrw"
 requires-python = ">=3.9"
