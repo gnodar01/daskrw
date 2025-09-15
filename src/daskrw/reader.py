@@ -1,24 +1,25 @@
-from typing import TypedDict, Literal, Optional, Union
 from math import ceil
+from typing import TypedDict, Literal, Optional, Union
 from collections import defaultdict
 
-import tifffile
-import zarr
 import numpy
+import zarr
+import tifffile
+import xmltodict
 import dask.array
 from dask.array.core import Array as daskArray
-import xmltodict
 
-
-MD_SIZE_S = "SizeS"
-MD_SIZE_C = "SizeC"
-MD_SIZE_Z = "SizeZ"
-MD_SIZE_T = "SizeT"
-MD_SIZE_Y = "SizeY"
-MD_SIZE_X = "SizeX"
-MD_SERIES_NAME = "SeriesNames"
-MD_TILE_SIZE_X = "TileSizeX"
-MD_TILE_SIZE_Y = "TileSizeY"
+from .constants import (
+    MD_SIZE_S,
+    MD_SIZE_C,
+    MD_SIZE_Z,
+    MD_SIZE_T,
+    MD_SIZE_Y,
+    MD_SIZE_X,
+    # MD_SERIES_NAME,
+    MD_TILE_SIZE_X,
+    MD_TILE_SIZE_Y,
+)
 
 class ReadTracker(TypedDict):
     # pyramid level
@@ -128,12 +129,8 @@ class TiledImageReader:
 
     def read_tiled(self,
                    wants_metadata_rescale=False,
-                   # TODO: LIS - support series,c,z,t,xywh
                    series=None,
                    c=None,
-                   z=None,
-                   t=None,
-                   xywh=None,
                    channel_names=None,
                    ):
         """Read from a tiled, pyramdial image file.
@@ -143,10 +140,7 @@ class TiledImageReader:
         :param series: series (pyramid level)
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
-        :param z: z-stack index
-        :param t: time index
         n.b. either z or t should be "None" to specify which channel to read across.
-        :param xywh: a (x, y, w, h) tuple
         :param channel_names: provide the channel names for the OME metadata
 
         Should return a data array with channel order [Z, ]Y, X[, C]
@@ -190,9 +184,9 @@ class TiledImageReader:
             ]
             self.__data: list[daskArray] = [
                 order_dims(
-                    dask.array.from_zarr(z), # type: ignore
+                    dask.array.from_zarr(zd), # type: ignore
                     len(self.__zarr_data)-1
-                ) for z in self.__zarr_data
+                ) for zd in self.__zarr_data
             ]
 
         if channel_names is not None:
@@ -222,83 +216,83 @@ class TiledImageReader:
 
         return level_data
 
-    def current_tile(self, all_channels=False):
-        nth = self.nth
-        level = self.level
-        if all_channels:
-            num_channels = self._res[level]["channels"]
-            channel = slice(0,num_channels,1)
-        else:
-            channel = self.channel
+    # def current_tile(self, all_channels=False):
+    #     nth = self.nth
+    #     level = self.level
+    #     if all_channels:
+    #         num_channels = self._res[level]["channels"]
+    #         channel = slice(0,num_channels,1)
+    #     else:
+    #         channel = self.channel
 
-        assert nth >= 0
-        assert nth <= self._nn(level), f"only {self._nn(level)} tiles at level {level}, got {nth}"
+    #     assert nth >= 0
+    #     assert nth <= self._nn(level), f"only {self._nn(level)} tiles at level {level}, got {nth}"
 
-        return self._tile_n(nth=nth, channel=channel, level=level)
+    #     return self._tile_n(nth=nth, channel=channel, level=level)
 
-    def go_tile_left(self):
-        nth = self.nth
-        level = self.level
-        curr_x = nth % self._nx(level)
-        if curr_x > 0:
-            self.nth = nth - 1
-        return self.current_tile()
+    # def go_tile_left(self):
+    #     nth = self.nth
+    #     level = self.level
+    #     curr_x = nth % self._nx(level)
+    #     if curr_x > 0:
+    #         self.nth = nth - 1
+    #     return self.current_tile()
 
-    def go_tile_right(self):
-        nth = self.nth
-        level = self.level
-        curr_x = nth % self._nx(level)
-        if curr_x < (self._nx(level) - 1):
-            self.nth = nth + 1
-        return self.current_tile()
+    # def go_tile_right(self):
+    #     nth = self.nth
+    #     level = self.level
+    #     curr_x = nth % self._nx(level)
+    #     if curr_x < (self._nx(level) - 1):
+    #         self.nth = nth + 1
+    #     return self.current_tile()
 
-    def go_tile_up(self):
-        nth = self.nth
-        level = self.level
-        new_nth = nth - self._nx(level)
-        if new_nth >= 0:
-            self.nth = new_nth
-        return self.current_tile()
+    # def go_tile_up(self):
+    #     nth = self.nth
+    #     level = self.level
+    #     new_nth = nth - self._nx(level)
+    #     if new_nth >= 0:
+    #         self.nth = new_nth
+    #     return self.current_tile()
 
-    def go_tile_down(self):
-        nth = self.nth
-        level = self.level
-        new_nth = nth + self._nx(level)
-        if new_nth < self._nn(level):
-            self.nth = new_nth
-        return self.current_tile()
+    # def go_tile_down(self):
+    #     nth = self.nth
+    #     level = self.level
+    #     new_nth = nth + self._nx(level)
+    #     if new_nth < self._nn(level):
+    #         self.nth = new_nth
+    #     return self.current_tile()
 
-    #  down the inverted pyramid (downscale)
-    def go_level_up(self):
-        level = self.level
-        nth = self.nth
-        if level < (len(self._res) - 1):
-            new_iy = self._iy(level, nth) // 2
-            new_ix = self._ix(level, nth) // 2
+    # #  down the inverted pyramid (downscale)
+    # def go_level_up(self):
+    #     level = self.level
+    #     nth = self.nth
+    #     if level < (len(self._res) - 1):
+    #         new_iy = self._iy(level, nth) // 2
+    #         new_ix = self._ix(level, nth) // 2
 
-            level += 1
+    #         level += 1
 
-            new_nx = self._nx(level)
+    #         new_nx = self._nx(level)
 
-            self.level = level
-            self.nth = new_iy * new_nx + new_ix
-        return self.current_tile()
+    #         self.level = level
+    #         self.nth = new_iy * new_nx + new_ix
+    #     return self.current_tile()
 
-    # up the inverted pyramid (upscale)
-    def go_level_down(self):
-        level = self.level
-        nth = self.nth
-        if level > 0:
-            new_iy = self._iy(level, nth) * 2
-            new_ix = self._ix(level, nth) * 2
+    # # up the inverted pyramid (upscale)
+    # def go_level_down(self):
+    #     level = self.level
+    #     nth = self.nth
+    #     if level > 0:
+    #         new_iy = self._iy(level, nth) * 2
+    #         new_ix = self._ix(level, nth) * 2
 
-            level = max(0, level - 1)
+    #         level = max(0, level - 1)
 
-            new_nx = self._nx(level)
+    #         new_nx = self._nx(level)
 
-            self.level = level
-            self.nth = new_iy * new_nx + new_ix
-        return self.current_tile()
+    #         self.level = level
+    #         self.nth = new_iy * new_nx + new_ix
+    #     return self.current_tile()
 
     def close(self):
         if self.__lru_cache:
@@ -365,25 +359,25 @@ class TiledImageReader:
             meta_dict[MD_TILE_SIZE_X].append(standard_meta["tile_width"])
         return meta_dict
 
-    def _tile_n(self, nth: int, channel: slice = slice(0,1,1), level: int = 0) -> daskArray:
-        assert self.__data, "No data read yet (read_tile failed or was never called)"
-        assert len(self.__data) > level
-        assert level >= 0
+    # def _tile_n(self, nth: int, channel: slice = slice(0,1,1), level: int = 0) -> daskArray:
+    #     assert self.__data, "No data read yet (read_tile failed or was never called)"
+    #     assert len(self.__data) > level
+    #     assert level >= 0
 
-        # _res = self._res
-        row_slice, col_slice = self._n_slices(nth, level)
+    #     # _res = self._res
+    #     row_slice, col_slice = self._n_slices(nth, level)
 
-        tile = self.__data[level][row_slice, col_slice, channel]
+    #     tile = self.__data[level][row_slice, col_slice, channel]
 
-        assert 0 not in tile.shape, f"invalid shape {tile.shape}"
+    #     assert 0 not in tile.shape, f"invalid shape {tile.shape}"
 
-        return tile
+    #     return tile
 
-    def _decrement_channel(self, curr_channel: slice, level: Optional[int]) -> slice:
-        return self._set_channel(start = curr_channel.start - 1, stop = curr_channel.stop - 1, step = curr_channel.step, lvl = level)
+    # def _decrement_channel(self, curr_channel: slice, level: Optional[int]) -> slice:
+    #     return self._set_channel(start = curr_channel.start - 1, stop = curr_channel.stop - 1, step = curr_channel.step, lvl = level)
 
-    def _increment_channel(self, curr_channel: slice, level: Optional[int]) -> slice:
-        return self._set_channel(start = curr_channel.start + 1, stop = curr_channel.stop + 1, step = curr_channel.step, lvl = level)
+    # def _increment_channel(self, curr_channel: slice, level: Optional[int]) -> slice:
+    #     return self._set_channel(start = curr_channel.start + 1, stop = curr_channel.stop + 1, step = curr_channel.step, lvl = level)
 
     def _set_channel(self, start: int, stop: Optional[int] = None, step: Optional[int] = None, lvl: Optional[int] = None) -> slice:
         if lvl:
@@ -406,82 +400,82 @@ class TiledImageReader:
 
         return slice(start, stop, step)
 
-    def _n_slices(self, n: int, lvl: int = 0) -> tuple[slice, slice]:
-        """0-indexed, assumes row major"""
-        n_tiles_x = self._res[lvl]["n_tiles_x"]
-        tile_row = int(n // n_tiles_x)
-        tile_col = int(n % n_tiles_x)
+    # def _n_slices(self, n: int, lvl: int = 0) -> tuple[slice, slice]:
+    #     """0-indexed, assumes row major"""
+    #     n_tiles_x = self._res[lvl]["n_tiles_x"]
+    #     tile_row = int(n // n_tiles_x)
+    #     tile_col = int(n % n_tiles_x)
 
-        assert n_tiles_x > 0
+    #     assert n_tiles_x > 0
 
-        row_start = int(tile_row * self._res[lvl]["max_tile_height"])
-        row_end = int(row_start + self._res[lvl]["max_tile_height"])
+    #     row_start = int(tile_row * self._res[lvl]["max_tile_height"])
+    #     row_end = int(row_start + self._res[lvl]["max_tile_height"])
 
-        col_start = int(tile_col * self._res[lvl]["max_tile_width"])
-        col_end = int(col_start + self._res[lvl]["max_tile_width"])
+    #     col_start = int(tile_col * self._res[lvl]["max_tile_width"])
+    #     col_end = int(col_start + self._res[lvl]["max_tile_width"])
 
-        assert row_end > row_start
-        assert col_end > col_start
-        
-        return (slice(row_start, row_end, 1), slice(col_start, col_end, 1))
+    #     assert row_end > row_start
+    #     assert col_end > col_start
+    #     
+    #     return (slice(row_start, row_end, 1), slice(col_start, col_end, 1))
 
-    def _nn(self, lvl: int):
-        """num of nth values"""
-        return self._nx(lvl) * self._ny(lvl)
+    # def _nn(self, lvl: int):
+    #     """num of nth values"""
+    #     return self._nx(lvl) * self._ny(lvl)
 
-    def _iy(self, lvl: int, n: int):
-        """idx of tile in the y direction"""
-        _tile_width = self._tile_width(lvl)
-        _img_width = self._res[lvl]["width"]
+    # def _iy(self, lvl: int, n: int):
+    #     """idx of tile in the y direction"""
+    #     _tile_width = self._tile_width(lvl)
+    #     _img_width = self._res[lvl]["width"]
 
-        n_tile_cols = ceil(_img_width / _tile_width)
+    #     n_tile_cols = ceil(_img_width / _tile_width)
 
-        return n // n_tile_cols
+    #     return n // n_tile_cols
 
-    def _ny(self, lvl: int):
-        """num tiles in y direction"""
-        return self._res[lvl]["n_tiles_y"]
+    # def _ny(self, lvl: int):
+    #     """num tiles in y direction"""
+    #     return self._res[lvl]["n_tiles_y"]
 
-    def _ix(self, lvl: int, n: int):
-        """idx of tile in the x direction"""
-        _tile_width = self._tile_width(lvl)
-        _img_width = self._res[lvl]["width"]
+    # def _ix(self, lvl: int, n: int):
+    #     """idx of tile in the x direction"""
+    #     _tile_width = self._tile_width(lvl)
+    #     _img_width = self._res[lvl]["width"]
 
-        n_tile_cols = ceil(_img_width / _tile_width)
+    #     n_tile_cols = ceil(_img_width / _tile_width)
 
-        return n % n_tile_cols
+    #     return n % n_tile_cols
 
-    def _nx(self, lvl: int):
-        """num tiles in the x direction"""
-        return self._res[lvl]["n_tiles_x"]
+    # def _nx(self, lvl: int):
+    #     """num tiles in the x direction"""
+    #     return self._res[lvl]["n_tiles_x"]
 
-    def _tile_height(self, lvl: int):
-        return self._res[lvl]["max_tile_height"]
+    # def _tile_height(self, lvl: int):
+    #     return self._res[lvl]["max_tile_height"]
 
-    def _tile_width(self, lvl: int):
-        return self._res[lvl]["max_tile_width"]
+    # def _tile_width(self, lvl: int):
+    #     return self._res[lvl]["max_tile_width"]
 
-    def get_level(self):
-        return self._read_tracker["level"]
+    # def get_level(self):
+    #     return self._read_tracker["level"]
 
-    def set_level(self, level: int):
-        self._read_tracker["level"] = level
+    # def set_level(self, level: int):
+    #     self._read_tracker["level"] = level
 
-    def del_level(self):
-        self._read_tracker["level"] = None
+    # def del_level(self):
+    #     self._read_tracker["level"] = None
 
-    level = property(get_level, set_level, del_level, "pyramid level")
+    # level = property(get_level, set_level, del_level, "pyramid level")
 
-    def get_nth(self):
-        return self._read_tracker["nth"]
+    # def get_nth(self):
+    #     return self._read_tracker["nth"]
 
-    def set_nth(self, nth: int):
-        self._read_tracker["nth"] = nth
+    # def set_nth(self, nth: int):
+    #     self._read_tracker["nth"] = nth
 
-    def del_nth(self):
-        self._read_tracker["nth"] = None
+    # def del_nth(self):
+    #     self._read_tracker["nth"] = None
 
-    nth = property(get_nth, set_nth, del_nth, "tile number")
+    # nth = property(get_nth, set_nth, del_nth, "tile number")
 
     def get_channel(self):
         return self._read_tracker["c"]
@@ -504,6 +498,7 @@ class TiledImageReader:
         self._read_tracker["z"] = None
 
     plane = property(get_plane, set_plane, del_plane, "plane number(s)")
+
     def get_frame(self):
         return self._read_tracker["t"]
 
