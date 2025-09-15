@@ -1,5 +1,5 @@
 from math import ceil
-from typing import TypedDict, Literal, Optional, Union
+from typing import TypedDict, Literal, Optional, Union, Tuple
 from collections import defaultdict
 
 import numpy
@@ -132,7 +132,7 @@ class TiledImageReader:
                    series=None,
                    c=None,
                    channel_names=None,
-                   ):
+                   ) -> Union[daskArray, Tuple[daskArray, Tuple[float, float]]]:
         """Read from a tiled, pyramdial image file.
         :param wants_metadata_rescale: if `True`, return a tuple of image and a
                tuple of (min, max) for range values of image dtype gathered from
