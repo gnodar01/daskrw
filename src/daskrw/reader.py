@@ -455,27 +455,27 @@ class TiledImageReader:
     # def _tile_width(self, lvl: int):
     #     return self._res[lvl]["max_tile_width"]
 
-    # def get_level(self):
-    #     return self._read_tracker["level"]
+    def get_level(self):
+        return self._read_tracker["level"]
 
-    # def set_level(self, level: int):
-    #     self._read_tracker["level"] = level
+    def set_level(self, level: int):
+        self._read_tracker["level"] = level
 
-    # def del_level(self):
-    #     self._read_tracker["level"] = None
+    def del_level(self):
+        self._read_tracker["level"] = None
 
-    # level = property(get_level, set_level, del_level, "pyramid level")
+    level = property(get_level, set_level, del_level, "pyramid level")
 
-    # def get_nth(self):
-    #     return self._read_tracker["nth"]
+    def get_nth(self):
+        return self._read_tracker["nth"]
 
-    # def set_nth(self, nth: int):
-    #     self._read_tracker["nth"] = nth
+    def set_nth(self, nth: int):
+        self._read_tracker["nth"] = nth
 
-    # def del_nth(self):
-    #     self._read_tracker["nth"] = None
+    def del_nth(self):
+        self._read_tracker["nth"] = None
 
-    # nth = property(get_nth, set_nth, del_nth, "tile number")
+    nth = property(get_nth, set_nth, del_nth, "tile number")
 
     def get_channel(self):
         return self._read_tracker["c"]
