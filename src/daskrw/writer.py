@@ -4,8 +4,8 @@ from shutil import rmtree
 from typing import TypedDict, Literal, Optional, Union
 
 import zarr
-import dask
-import numpy
+#import dask
+#import numpy
 from dask.array.core import Array as daskArray, to_zarr
 from ome_zarr.io import parse_url
 from ome_zarr.writer import write_multiscales_metadata
